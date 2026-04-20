@@ -28,6 +28,9 @@
                 <span>Citation RAG</span>
             </div>
             <div class="toolbar-actions">
+                <button class="btn btn-icon" id="toggle-library" title="Toggle Library">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                </button>
                 <label for="pdf-upload" class="btn btn-primary" id="upload-label">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     <span>Ingest & Open PDF</span>
@@ -38,7 +41,17 @@
         </header>
 
         <main class="split-view">
-            <!-- Left: PDF Viewer -->
+            <!-- Left: Library (Collapsible) -->
+            <aside class="library-pane collapsed" id="library-pane">
+                <div class="panel-header">
+                    <h3>Paper Library</h3>
+                </div>
+                <div id="library-list" class="library-list">
+                    <!-- Paper items injected by JS -->
+                </div>
+            </aside>
+
+            <!-- Middle: PDF Viewer -->
             <section class="viewer-pane">
                 <div class="viewer-toolbar">
                     <button class="btn btn-icon" id="prev-page" title="Previous Page">

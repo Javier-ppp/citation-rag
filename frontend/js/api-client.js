@@ -51,4 +51,15 @@ class ApiClient {
             throw error;
         }
     }
+
+    static async getPapers() {
+        try {
+            const response = await fetch(`${API_BASE}/papers`);
+            if (!response.ok) throw new Error(await response.text());
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch papers error:', error);
+            throw error;
+        }
+    }
 }

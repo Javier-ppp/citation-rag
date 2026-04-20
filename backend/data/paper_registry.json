@@ -1,1 +1,50 @@
-{}
+{
+  "2182b548-cb52-4e2f-a3d4-327359527f60": {
+    "paper_id": "2182b548-cb52-4e2f-a3d4-327359527f60",
+    "title": "paper1_sam2",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "paper1_sam2.pdf",
+    "num_references": 21
+  },
+  "0f0f8a40-07f6-4198-b5a0-dbc81d41c324": {
+    "paper_id": "0f0f8a40-07f6-4198-b5a0-dbc81d41c324",
+    "title": "paper2_small_lm",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "paper2_small_lm.pdf",
+    "num_references": 0
+  },
+  "4f1be045-c411-4105-8d91-662489743924": {
+    "paper_id": "4f1be045-c411-4105-8d91-662489743924",
+    "title": "paper3_attention",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "paper3_attention.pdf",
+    "num_references": 40
+  },
+  "a68ed1dd-481e-425a-9869-9f79a53c517e": {
+    "paper_id": "a68ed1dd-481e-425a-9869-9f79a53c517e",
+    "title": "paper4_trading_agents",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "paper4_trading_agents.pdf",
+    "num_references": 0
+  },
+  "08799963-1dec-4752-9f74-5bacd5300c9e": {
+    "paper_id": "08799963-1dec-4752-9f74-5bacd5300c9e",
+    "title": "paper5_generic",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "paper5_generic.pdf",
+    "num_references": 0
+  },
+  "86b0b62f-be87-49e0-bdb5-70cccf5311a1": {
+    "paper_id": "86b0b62f-be87-49e0-bdb5-70cccf5311a1",
+    "title": "dummy_citing_paper",
+    "first_author": "Multiple",
+    "year": "2026",
+    "filename": "dummy_citing_paper.pdf",
+    "num_references": 5
+  }
+}

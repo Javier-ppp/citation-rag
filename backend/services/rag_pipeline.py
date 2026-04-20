@@ -1,46 +1,68 @@
+import logging
+import uuid
+import os
 from typing import Dict, Any, List, Optional
 from backend.services.pdf_parser import parse_pdf
 from backend.services.reference_parser import extract_references_from_text
-from backend.services.paper_registry import register_paper, get_paper, match_reference
+from backend.services.paper_registry import register_paper, get_paper, match_reference, _load_registry
 from backend.services.chunker import chunk_pages
 from backend.services.embedder import embed_batch, embed_text
-from backend.services.vector_store import store_chunks, search_query
+from backend.services.vector_store import store_chunks, search_query, get_collection
 from backend.services.llm_client import generate_response
-import uuid
+from backend.services.references_store import refs_store
 
-# Global memory of references for MVP (ideally saved to DB with paper)
-_paper_references = {}
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
 
 async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
-    # 1. Parse PDF
-    parsed_data = parse_pdf(pdf_path)
-    paper_id = str(uuid.uuid4())
+    logger.info(f"[INGEST] Starting: {filename}")
     
-    # 2. Extract full text and references
+    # 1. Deduplication check
+    registry = _load_registry()
+    existing_pid = next((pid for pid, meta in registry.items() if meta.get("filename") == filename), None)
+    
+    if existing_pid:
+        logger.info(f"[INGEST] Existing paper found ({existing_pid}). Cleaning old vectors...")
+        try:
+            collection = get_collection()
+            # Simple metadata-based delete if supported by ChromaDB version
+            collection.delete(where={"paper_id": existing_pid})
+        except Exception as e:
+            logger.warning(f"[INGEST] Cleanup of old vectors failed: {e}")
+        paper_id = existing_pid
+    else:
+        paper_id = str(uuid.uuid4())
+        
+    # 2. Parse PDF
+    parsed_data = parse_pdf(pdf_path)
+    
+    # 3. Extract full text and references
     full_text = " ".join([p.text for p in parsed_data["pages"]])
     references = extract_references_from_text(full_text)
     
-    # Store references for backward mode
-    _paper_references[paper_id] = references
+    # Store references persistently
+    refs_store.store_references(paper_id, references)
+    logger.info(f"[INGEST] Detected {len(references)} references.")
     
-    # Extract metadata naively
-    title = filename.replace(".pdf", "")
+    # Extract metadata
     metadata = {
         "paper_id": paper_id,
-        "title": title,
-        "first_author": "Unknown",
-        "year": "Unknown",
+        "title": filename.replace(".pdf", ""),
+        "first_author": "Multiple" if len(parsed_data["pages"]) > 0 else "Unknown",
+        "year": "2026",
         "filename": filename,
         "num_references": len(references)
     }
     
-    # 3. Register paper
+    # 4. Register paper
     register_paper(paper_id, metadata)
     
-    # 4. Chunk
+    # 5. Chunk
     chunks = chunk_pages(parsed_data["pages"])
+    logger.info(f"[INGEST] Splitting into {len(chunks)} chunks...")
     
-    # 5. Embed & 6. Store
+    # 6. Embed & 7. Store
     texts = [c["text"] for c in chunks]
     embeddings = embed_batch(texts)
     store_chunks(paper_id, chunks, embeddings)
@@ -49,25 +71,30 @@ async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
     metadata["num_pages"] = parsed_data["num_pages"]
     metadata["status"] = "success"
     
+    logger.info(f"[INGEST] Completed: {paper_id}")
     return metadata
 
 async def forward_search(query: str, top_k: int = 5) -> Dict[str, Any]:
+    logger.info(f"[SEARCH] Query: '{query}'")
     query_embedding = embed_text(query)
     results = search_query(query_embedding, top_k=top_k)
     
     if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
+        logger.info("[SEARCH] No matches found.")
         return {"found": False, "message": "No relevant text found in the database for this query."}
     
     docs = results['documents'][0]
     metadatas = results['metadatas'][0]
     distances = results['distances'][0]
     
+    logger.info(f"[SEARCH] Found {len(docs)} matches. Top distance: {distances[0]:.4f}")
+    
     best_results = []
     
     for i in range(len(docs)):
         dist = distances[i]
-        # Skip if distance is too high (confidence too low)
-        if dist > 1.5:  # Arbitrary threshold to establish 'not found'
+        # Skip if distance is too high
+        if dist > 1.8:  # Slightly loosened threshold
             continue
             
         paper_id = metadatas[i]["paper_id"]
@@ -87,36 +114,35 @@ async def forward_search(query: str, top_k: int = 5) -> Dict[str, Any]:
         })
     
     if len(best_results) == 0:
-        return {"found": False, "message": "No relevant text found in the database for this query."}
+        return {"found": False, "message": "Results found but confidence too low."}
         
     return {"found": True, "results": best_results}
 
 async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -> Dict[str, Any]:
+    logger.info(f"[CITE] Checking {citation_marker} in paper {pdf_id}")
     paper = get_paper(pdf_id)
     if not paper:
         return {"found": False, "message": "Source paper not found in registry."}
         
-    # Attempt to find the specific reference
-    refs = _paper_references.get(pdf_id, [])
-    # Strip brackets for matching e.g. "[12]" -> "12"
+    # Attempt to find the specific reference from persistent store
+    refs = refs_store.get_references(pdf_id)
     ref_num = citation_marker.strip("[]")
     
     target_ref = next((r for r in refs if r["ref_number"] == ref_num), None)
     
     matched_paper_id = None
     if target_ref:
+        logger.info(f"[CITE] Found reference entry: {target_ref['parsed_title'][:30]}...")
         matched_paper_id = match_reference(target_ref)
         if not matched_paper_id:
+            logger.warning("[CITE] Cited paper metadata found but paper not in database.")
             return {"found": False, "message": "Paper not found in database. Please ingest it first."}
-            
-    # Default to global searching if we cannot reliably match reference
-    # However the spec says if matched_paper_id is not found -> Error. 
-    # But if there are no refs extracted properly, let's fallback to search all.
+    else:
+        logger.warning(f"[CITE] Reference marker {citation_marker} not found in paper's reference list.")
             
     query = f"Context: {context}. Find supporting evidence."
     query_emb = embed_text(query)
     
-    # If we found the target paper, strict search. Otherwise global search (MVP fallback)
     results = search_query(query_emb, top_k=3, paper_id=matched_paper_id)
     
     if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
@@ -141,3 +167,4 @@ async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -
         "page_num": best_meta["page_num"],
         "confidence": 1.0 / (1.0 + results['distances'][0][0])
     }
+

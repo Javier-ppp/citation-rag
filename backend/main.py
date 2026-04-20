@@ -22,11 +22,12 @@ app.add_middleware(
 def health_check():
     return {"status": "ok", "message": "Citation RAG API is running"}
 
-from backend.routes import ingest, search, cite
+from backend.routes import ingest, search, cite, papers
 
 app.include_router(ingest.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(cite.router, prefix="/api")
+app.include_router(papers.router, prefix="/api")
 
 # Serve the frontend statically AFTER API routes
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
