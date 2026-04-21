@@ -4,19 +4,56 @@ import os
 from typing import Dict, Any, List, Optional
 from backend.services.pdf_parser import parse_pdf
 from backend.services.reference_parser import extract_references_from_text
-from backend.services.paper_registry import register_paper, get_paper, match_reference, _load_registry
+from backend.services.paper_registry import register_paper, get_paper, match_reference, _load_registry, REGISTRY_PATH
 from backend.services.chunker import chunk_pages
 from backend.services.embedder import embed_batch, embed_text
-from backend.services.vector_store import store_chunks, search_query, get_collection
+from backend.services.vector_store import store_chunks, search_query, get_collection, reset_vector_db
 from backend.services.llm_client import generate_response
-from backend.services.references_store import refs_store
+from backend.services.references_store import refs_store, REFERENCES_PATH
+import shutil
+
+async def clear_all_data() -> bool:
+    """Wipes all persistent data to start a fresh session."""
+    logger.info("[SESSION] Starting complete data reset...")
+    try:
+        # 1. Reset Vector DB
+        db_reset = reset_vector_db()
+        if not db_reset:
+            logger.warning("[SESSION] Vector DB reset reported failure, continuing...")
+        
+        # 2. Clear Registry logic
+        if os.path.exists(REGISTRY_PATH):
+            os.remove(REGISTRY_PATH)
+            logger.info(f"[SESSION] Deleted registry at {REGISTRY_PATH}")
+            
+        # 3. Clear References
+        if os.path.exists(REFERENCES_PATH):
+            os.remove(REFERENCES_PATH)
+            logger.info(f"[SESSION] Deleted references at {REFERENCES_PATH}")
+            
+        # 4. Delete PDF files
+        pdf_dir = "backend/data/pdfs"
+        if os.path.exists(pdf_dir):
+            for filename in os.listdir(pdf_dir):
+                file_path = os.path.join(pdf_dir, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                except Exception as e:
+                    logger.warning(f"[SESSION] Could not delete {file_path}: {e}")
+            logger.info(f"[SESSION] Cleared PDF directory {pdf_dir}")
+                    
+        return True
+    except Exception as e:
+        logger.error(f"[SESSION] Critical failure during clear data: {e}")
+        return False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
-    logger.info(f"[INGEST] Starting: {filename}")
+async def ingest_pdf(pdf_path: str, filename: str, role: str = "source") -> Dict[str, Any]:
+    logger.info(f"[INGEST] Starting: {filename} as {role}")
     
     # 1. Deduplication check
     registry = _load_registry()
@@ -26,7 +63,6 @@ async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
         logger.info(f"[INGEST] Existing paper found ({existing_pid}). Cleaning old vectors...")
         try:
             collection = get_collection()
-            # Simple metadata-based delete if supported by ChromaDB version
             collection.delete(where={"paper_id": existing_pid})
         except Exception as e:
             logger.warning(f"[INGEST] Cleanup of old vectors failed: {e}")
@@ -41,7 +77,8 @@ async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
     full_text = " ".join([p.text for p in parsed_data["pages"]])
     references = extract_references_from_text(full_text)
     
-    # Store references persistently
+    # Only store references if it's the main paper (efficiency)
+    # However, if it might be demoted later, we should store them anyway.
     refs_store.store_references(paper_id, references)
     logger.info(f"[INGEST] Detected {len(references)} references.")
     
@@ -52,10 +89,11 @@ async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
         "first_author": "Multiple" if len(parsed_data["pages"]) > 0 else "Unknown",
         "year": "2026",
         "filename": filename,
-        "num_references": len(references)
+        "num_references": len(references),
+        "role": role
     }
     
-    # 4. Register paper
+    # 4. Register paper (this handles demoting previous main)
     register_paper(paper_id, metadata)
     
     # 5. Chunk
@@ -71,17 +109,27 @@ async def ingest_pdf(pdf_path: str, filename: str) -> Dict[str, Any]:
     metadata["num_pages"] = parsed_data["num_pages"]
     metadata["status"] = "success"
     
-    logger.info(f"[INGEST] Completed: {paper_id}")
+    logger.info(f"[INGEST] Completed: {paper_id} ({role})")
     return metadata
 
 async def forward_search(query: str, top_k: int = 5) -> Dict[str, Any]:
-    logger.info(f"[SEARCH] Query: '{query}'")
+    logger.info(f"[SEARCH] Query: '{query}' (Sources Only)")
     query_embedding = embed_text(query)
-    results = search_query(query_embedding, top_k=top_k)
+    
+    # Filter to only search across papers flagged as 'source'
+    from backend.services.paper_registry import get_source_paper_ids
+    source_ids = get_source_paper_ids()
+    
+    if not source_ids:
+        logger.info("[SEARCH] No source papers available.")
+        return {"found": False, "message": "No source papers available to search. Please ingest some first."}
+
+    # ChromaDB 'where' filter with '$in' for multiple paper_ids
+    results = search_query(query_embedding, top_k=top_k, paper_id={"$in": source_ids} if len(source_ids) > 1 else source_ids[0])
     
     if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
-        logger.info("[SEARCH] No matches found.")
-        return {"found": False, "message": "No relevant text found in the database for this query."}
+        logger.info("[SEARCH] No matches found in source papers.")
+        return {"found": False, "message": "No relevant text found in the source papers."}
     
     docs = results['documents'][0]
     metadatas = results['metadatas'][0]
@@ -93,18 +141,32 @@ async def forward_search(query: str, top_k: int = 5) -> Dict[str, Any]:
     
     for i in range(len(docs)):
         dist = distances[i]
-        # Skip if distance is too high
-        if dist > 1.8:  # Slightly loosened threshold
+        if dist > 1.8:
             continue
             
         paper_id = metadatas[i]["paper_id"]
         paper_info = get_paper(paper_id)
+        full_chunk = docs[i]
         
-        prompt = f"Does the following passage support or relate to the statement: '{query}'?\nPassage: {docs[i]}\nExplain briefly."
-        explanation = await generate_response(prompt)
+        # Step 1: Extract the most relevant 1-3 sentences (citation-sized snippet)
+        extract_prompt = (
+            f"From the passage below, extract the 1-3 sentences that MOST DIRECTLY support "
+            f"or evidence the following claim: '{query}'.\n"
+            f"Rules: ONLY output the reelevant sentece in the passage verbatim. No commentary, no ellipsis, no quotes.\n"
+            f"Passage: {full_chunk}"
+        )
+        extracted = await generate_response(extract_prompt)
+        
+        # Step 2: Brief relevance explanation  
+        explain_prompt = (
+            f"In one sentence, explain WHY this passage is relevant to: '{query}'.\n"
+            f"Passage: {extracted or full_chunk}"
+        )
+        explanation = await generate_response(explain_prompt)
         
         best_results.append({
-            "passage": docs[i],
+            "passage": extracted.strip() if extracted else full_chunk,
+            "full_chunk": full_chunk,
             "source_pdf": paper_info.get("filename") if paper_info else "Unknown",
             "title": paper_info.get("title") if paper_info else "Unknown",
             "first_author": paper_info.get("first_author") if paper_info else "Unknown",
@@ -124,7 +186,6 @@ async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -
     if not paper:
         return {"found": False, "message": "Source paper not found in registry."}
         
-    # Attempt to find the specific reference from persistent store
     refs = refs_store.get_references(pdf_id)
     ref_num = citation_marker.strip("[]")
     
@@ -136,17 +197,19 @@ async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -
         matched_paper_id = match_reference(target_ref)
         if not matched_paper_id:
             logger.warning("[CITE] Cited paper metadata found but paper not in database.")
-            return {"found": False, "message": "Paper not found in database. Please ingest it first."}
+            return {"found": False, "message": "Cited paper not found in the 'Source' database. Please ingest it first."}
     else:
         logger.warning(f"[CITE] Reference marker {citation_marker} not found in paper's reference list.")
+        return {"found": False, "message": "Citation marker not found in reference list."}
             
     query = f"Context: {context}. Find supporting evidence."
     query_emb = embed_text(query)
     
+    # matched_paper_id is verified to be a 'source' paper in match_reference
     results = search_query(query_emb, top_k=3, paper_id=matched_paper_id)
     
     if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
-        return {"found": False, "message": "No supporting evidence found."}
+        return {"found": False, "message": "No supporting evidence found in the cited source."}
         
     best_doc = results['documents'][0][0]
     best_meta = results['metadatas'][0][0]
@@ -167,4 +230,5 @@ async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -
         "page_num": best_meta["page_num"],
         "confidence": 1.0 / (1.0 + results['distances'][0][0])
     }
+
 

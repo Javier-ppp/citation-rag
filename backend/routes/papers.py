@@ -9,5 +9,8 @@ async def get_all_papers():
     registry = _load_registry()
     papers = []
     for pid, meta in registry.items():
+        # Provide default role for legacy papers
+        if "role" not in meta:
+            meta["role"] = "source"
         papers.append(meta)
     return papers

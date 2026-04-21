@@ -20,6 +20,7 @@ class IngestResponse(BaseModel):
     num_pages: int
     num_chunks: int
     num_references: int
+    role: str
     status: str
 
 # --- Search Models (Forward Mode) ---

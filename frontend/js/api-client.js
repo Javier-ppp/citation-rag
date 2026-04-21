@@ -1,12 +1,12 @@
 const API_BASE = 'http://localhost:8000/api';
 
 class ApiClient {
-    static async ingestPdf(file) {
+    static async ingestPdf(file, role = "source") {
         const formData = new FormData();
         formData.append('file', file);
         
         try {
-            const response = await fetch(`${API_BASE}/ingest`, {
+            const response = await fetch(`${API_BASE}/ingest?role=${role}`, {
                 method: 'POST',
                 body: formData
             });
@@ -59,6 +59,19 @@ class ApiClient {
             return await response.json();
         } catch (error) {
             console.error('Fetch papers error:', error);
+            throw error;
+        }
+    }
+
+    static async resetSession() {
+        try {
+            const response = await fetch(`${API_BASE}/session/reset`, {
+                method: 'POST'
+            });
+            if (!response.ok) throw new Error(await response.text());
+            return await response.json();
+        } catch (error) {
+            console.error('Reset error:', error);
             throw error;
         }
     }

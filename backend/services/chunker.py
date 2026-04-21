@@ -11,10 +11,11 @@ try:
 except LookupError:
     nltk.download('punkt_tab', quiet=True)
 
-def chunk_text(text: str, max_tokens: int = 500) -> List[str]:
+def chunk_text(text: str, max_tokens: int = 80) -> List[str]:
     """
     Splits text into chunks of maximum `max_tokens` (approximated by words),
-    respecting sentence boundaries.
+    respecting sentence boundaries. Default 80 words ≈ 4-5 sentences for
+    precise citation-level retrieval.
     """
     sentences = nltk.tokenize.sent_tokenize(text)
     
@@ -39,7 +40,7 @@ def chunk_text(text: str, max_tokens: int = 500) -> List[str]:
         
     return chunks
 
-def chunk_pages(pages: List[Any], max_tokens: int = 500) -> List[Dict[str, Any]]:
+def chunk_pages(pages: List[Any], max_tokens: int = 80) -> List[Dict[str, Any]]:
     """
     Takes a list of Page objects and chunks them, returning a list of chunk dicts including metadata.
     """

@@ -7,7 +7,7 @@ import shutil
 router = APIRouter()
 
 @router.post("/ingest", response_model=IngestResponse)
-async def ingest_route(file: UploadFile = File(...)):
+async def ingest_route(file: UploadFile = File(...), role: str = "source"):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
     
@@ -19,7 +19,7 @@ async def ingest_route(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, f)
         
     try:
-        metadata = await ingest_pdf(temp_path, file.filename)
+        metadata = await ingest_pdf(temp_path, file.filename, role=role)
         return metadata
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -22,16 +22,32 @@ app.add_middleware(
 def health_check():
     return {"status": "ok", "message": "Citation RAG API is running"}
 
-from backend.routes import ingest, search, cite, papers
+from backend.routes import ingest, search, cite, papers, session
 
 app.include_router(ingest.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(cite.router, prefix="/api")
 app.include_router(papers.router, prefix="/api")
+app.include_router(session.router, prefix="/api/session")
 
 # Serve the frontend statically AFTER API routes
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+
+# Prevent browser caching of static files during development
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith(("/js/", "/css/", "/")):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+app.add_middleware(NoCacheMiddleware)
 
 @app.get("/")
 async def root():

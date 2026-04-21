@@ -23,6 +23,16 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Fix for legacy/Edge browsers */
+  position: fixed; 
+  width: 100%;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 }
 
 .hidden { display: none !important; }
@@ -80,6 +90,18 @@ body {
   color: #fff;
 }
 
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.btn-secondary:hover {
+  background-color: var(--panel-bg);
+  color: var(--text-main);
+  border-color: var(--text-muted);
+}
+
 .btn-primary:hover {
   background-color: var(--accent-hover);
 }
@@ -99,6 +121,60 @@ body {
 .btn-icon:hover {
   background: var(--bg-color);
   color: var(--text-main);
+}
+
+.ingest-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.current-paper-badge {
+    margin-left: 16px;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    color: var(--accent-color);
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.role-badge {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.role-badge.main { background: var(--accent-color); color: white; }
+.role-badge.source { background: #3a3a5a; color: var(--text-muted); }
+
+.space-between { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.btn-tertiary {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.danger-hover:hover {
+    color: #ff4d4d;
 }
 
 .full-width { width: 100%; }
@@ -297,6 +373,27 @@ body {
   color: var(--text-muted);
 }
 
+.card-context-toggle {
+  font-size: 0.78rem;
+  color: var(--accent-color);
+  cursor: pointer;
+  margin: 8px 0 4px;
+  user-select: none;
+}
+.card-context-toggle:hover { opacity: 0.8; }
+
+.card-full-context {
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.02);
+  border-left: 2px solid var(--border-color);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
 /* Tooltip (Backward Mode) */
 .citation-tooltip {
   position: fixed;
@@ -363,4 +460,23 @@ body {
   align-items: center;
   gap: 12px;
   font-size: 0.9rem;
+}
+
+/* Scrollbar Styling for Premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

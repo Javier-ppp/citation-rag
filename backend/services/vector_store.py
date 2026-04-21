@@ -40,6 +40,15 @@ def store_chunks(paper_id: str, chunks: List[Dict[str, Any]], embeddings: List[L
         documents=texts
     )
 
+def reset_vector_db():
+    """Deletes the 'papers' collection to clear all stored vectors."""
+    try:
+        get_client().delete_collection(name="papers")
+        return True
+    except Exception as e:
+        print(f"Error resetting vector DB: {e}")
+        return False
+
 def search_query(query_embedding: List[float], top_k: int = 5, paper_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Search ChromaDB for chunks closest to the given query_embedding.

@@ -19,10 +19,23 @@ class PdfViewer {
         try {
             this.pdfDoc = await pdfjsLib.getDocument(url).promise;
             document.getElementById('page-count').textContent = this.pdfDoc.numPages;
+            this.pageNum = 1; // Reset to first page
             this.renderPage(this.pageNum);
         } catch (error) {
             console.error('Error loading PDF:', error);
             alert('Failed to load PDF.');
+        }
+    }
+
+    async loadPdf(data) {
+        try {
+            this.pdfDoc = await pdfjsLib.getDocument({ data: data }).promise;
+            document.getElementById('page-count').textContent = this.pdfDoc.numPages;
+            this.pageNum = 1; // Reset to first page
+            this.renderPage(this.pageNum);
+        } catch (error) {
+            console.error('Error loading PDF from data:', error);
+            alert('Failed to render PDF.');
         }
     }
 

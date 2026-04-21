@@ -56,15 +56,23 @@ class ForwardSearch {
             card.className = 'result-card';
             
             const confPercent = Math.round(res.relevance_score * 100);
+            const hasContext = res.full_chunk && res.full_chunk !== res.passage;
+            const contextId = `ctx-${Math.random().toString(36).slice(2)}`;
             
             card.innerHTML = `
                 <div class="card-header">
                     <span class="card-title">${res.title || 'Unknown Title'}</span>
-                    <span class="card-meta">Match: ${confPercent}%</span>
+                    <span class="card-meta">Match: ${confPercent}% · p.${(res.page_num ?? 0) + 1}</span>
                 </div>
-                <div class="card-passage">"...${res.passage}..."</div>
+                <div class="card-passage">${res.passage}</div>
+                ${hasContext ? `
+                <div class="card-context-toggle" onclick="this.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('Show') ? '▲ Hide context' : '▼ Show full context'">
+                    ▼ Show full context
+                </div>
+                <div class="card-full-context hidden">${res.full_chunk}</div>
+                ` : ''}
                 <div class="card-explanation">
-                    <strong>AI Analysis:</strong> ${res.llm_explanation || 'No analysis provided.'}
+                    <strong>Why relevant:</strong> ${res.llm_explanation || 'No analysis provided.'}
                 </div>
             `;
             this.container.appendChild(card);
