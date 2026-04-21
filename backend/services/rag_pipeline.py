@@ -3,7 +3,7 @@ import uuid
 import os
 from typing import Dict, Any, List, Optional
 from backend.services.pdf_parser import parse_pdf
-from backend.services.reference_parser import extract_references_from_text
+from backend.services.reference_parser import extract_references_llm, extract_references_from_text
 from backend.services.paper_registry import register_paper, get_paper, match_reference, _load_registry, REGISTRY_PATH
 from backend.services.chunker import chunk_pages
 from backend.services.embedder import embed_batch, embed_text
@@ -104,12 +104,16 @@ async def ingest_pdf(pdf_path: str, filename: str, role: str = "source") -> Dict
     # 2. Parse PDF
     parsed_data = parse_pdf(pdf_path)
     
-    # 3. Extract full text and references
+    # 3. Extract references
     full_text = " ".join([p.text for p in parsed_data["pages"]])
-    references = extract_references_from_text(full_text)
+    
+    if role == "main":
+        logger.info("[INGEST] Using LLM for reference extraction...")
+        references = await extract_references_llm(full_text)
+    else:
+        references = extract_references_from_text(full_text)
     
     # Only store references if it's the main paper (efficiency)
-    # However, if it might be demoted later, we should store them anyway.
     refs_store.store_references(paper_id, references)
     logger.info(f"[INGEST] Detected {len(references)} references.")
     

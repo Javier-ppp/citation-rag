@@ -1,15 +1,15 @@
 {
-  "3ab4077d-1f2b-4ba2-9982-e352e0bb03d3": {
-    "paper_id": "3ab4077d-1f2b-4ba2-9982-e352e0bb03d3",
+  "32d07e56-7b4b-4388-bfd2-4eb0a4ce9440": {
+    "paper_id": "32d07e56-7b4b-4388-bfd2-4eb0a4ce9440",
     "title": "Evaluation of Multi-Agent Systems and Transformers",
-    "first_author": null,
+    "first_author": "Test Researcher",
     "year": "2026",
     "filename": "dummy_citing_paper.pdf",
     "num_references": 5,
     "role": "main"
   },
-  "3dc585bb-cdca-414d-8754-a6b8f3033a9a": {
-    "paper_id": "3dc585bb-cdca-414d-8754-a6b8f3033a9a",
+  "ae0e736d-4bb3-4dcf-95b1-375f1c3f1aed": {
+    "paper_id": "ae0e736d-4bb3-4dcf-95b1-375f1c3f1aed",
     "title": "DeepSORT-Driven Visual Tracking Approach for Gesture Recognition in Interactive Systems",
     "first_author": "Tong Zhang",
     "year": "None",
@@ -17,8 +17,8 @@
     "num_references": 21,
     "role": "source"
   },
-  "21107d5a-5dc6-4409-874e-ba6e27e6aab8": {
-    "paper_id": "21107d5a-5dc6-4409-874e-ba6e27e6aab8",
+  "6108b104-16b0-4e25-b07e-f7693de8db29": {
+    "paper_id": "6108b104-16b0-4e25-b07e-f7693de8db29",
     "title": "Small Language Models are the Future of Agentic AI",
     "first_author": "Peter Belcak",
     "year": "None",
@@ -26,8 +26,8 @@
     "num_references": 0,
     "role": "source"
   },
-  "fd5ca408-2b6b-4b29-b811-7e0d74b9c72a": {
-    "paper_id": "fd5ca408-2b6b-4b29-b811-7e0d74b9c72a",
+  "16dcceb1-032a-429a-a33e-b9e288fa157c": {
+    "paper_id": "16dcceb1-032a-429a-a33e-b9e288fa157c",
     "title": "Attention Is All You Need",
     "first_author": "Ashish Vaswani",
     "year": "None",
@@ -35,8 +35,8 @@
     "num_references": 40,
     "role": "source"
   },
-  "d6433174-1d55-4740-a0a3-5cb3470a1f04": {
-    "paper_id": "d6433174-1d55-4740-a0a3-5cb3470a1f04",
+  "86c229be-0fd0-4c90-96d2-d09e428bae22": {
+    "paper_id": "86c229be-0fd0-4c90-96d2-d09e428bae22",
     "title": "DeepSeek-V3 Technical Report",
     "first_author": null,
     "year": "2025",
@@ -44,11 +44,11 @@
     "num_references": 0,
     "role": "source"
   },
-  "c73951f1-73c9-4ac7-8cc9-269ac8aa45f5": {
-    "paper_id": "c73951f1-73c9-4ac7-8cc9-269ac8aa45f5",
+  "274fa6c4-1729-4617-92bf-ef0fde98322b": {
+    "paper_id": "274fa6c4-1729-4617-92bf-ef0fde98322b",
     "title": "The doubly librating Plutinos",
     "first_author": "Renu Malhotra and Takashi Ito",
-    "year": "2025",
+    "year": "None",
     "filename": "paper5_generic.pdf",
     "num_references": 0,
     "role": "source"
