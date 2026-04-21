@@ -70,17 +70,33 @@ def match_reference(parsed_ref: Dict[str, str]) -> Optional[str]:
         if not meta_title:
             continue
             
-        # Title ratio
+        # Title ratio (Standard Fuzzy)
         ratio = difflib.SequenceMatcher(None, ref_title, meta_title).ratio()
         
+        # SMARTER CHECK: Substring containment (Noise Resilience)
+        # If the clean registry title is found inside the noisy parsed title, give it a large boost
+        if meta_title in ref_title or ref_title in meta_title:
+            ratio = max(ratio, 0.85)
+            
+        # Word Intersection Check
+        # Helpful for "SAM 2" vs "Segment Anything Model 2 (SAM 2)"
+        ref_words = set(ref_title.split())
+        meta_words = set(meta_title.split())
+        intersection = ref_words.intersection(meta_words)
+        if len(intersection) >= 2 and len(intersection) / len(meta_words) >= 0.7:
+            ratio = max(ratio, 0.80)
+        
         # Boost score if year matches
-        if meta.get("year") and str(meta.get("year")) == str(parsed_ref.get("parsed_year")):
+        # Handle "None" registry years vs specific citation years
+        reg_year = str(meta.get("year"))
+        cite_year = str(parsed_ref.get("parsed_year"))
+        if reg_year != "None" and cite_year != "None" and reg_year == cite_year:
             ratio += 0.1
             
         if ratio > best_score:
             best_score = ratio
             best_match = pid
             
-    if best_score > 0.65:
+    if best_score > 0.7:  # Slightly higher threshold now that we have boosts
         return best_match
     return None

@@ -22,7 +22,8 @@ def parse_pdf(pdf_path: str) -> Dict[str, Any]:
     try:
         doc = fitz.open(pdf_path)
         for page_num, page in enumerate(doc):
-            text = page.get_text()
+            # Use "text" with sort=True to ensure top-to-bottom reading order
+            text = page.get_text("text", sort=True)
             citations = extract_citations(text)
             pages.append(Page(page_num=page_num, text=text, citations=citations))
         

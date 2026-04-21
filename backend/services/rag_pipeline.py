@@ -59,8 +59,14 @@ async def extract_metadata(text_hint: str, filename: str) -> Dict[str, str]:
     prompt = (
         f"Extract bibliographic metadata from the following PDF start text.\n"
         f"Return ONLY a JSON object with keys: 'title', 'first_author', 'year'.\n"
-        f"If you cannot find a field, use the filename hint: {filename}\n"
-        f"Text: {text_hint[:2000]}"
+        f"Structural Rules:\n"
+        f"1. A paper starts with the TITLE, followed by a long list of AUTHORS, followed by the ABSTRACT.\n"
+        f"2. IDENTIFY THE ANCHORS: First, find the block of many names (Authors) and the word 'Abstract' or 'Summary'.\n"
+        f"3. THE TITLE is exactly the text ABOVE the authors. Include the full subtitle (e.g. text after a colon).\n"
+        f"4. Ignore journal/arXiv headers at the very top (e.g. 'arXiv:2408.00714v2').\n"
+        f"5. Warning: Some papers (like SAM 2) have 10-50 authors. Do not stop at the first name.\n"
+        f"6. For 'first_author', return ONLY the primary first name. If not found, use the filename: {filename}\n"
+        f"Text:\n{text_hint[:2000]}"
     )
     
     try:
