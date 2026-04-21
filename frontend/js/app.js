@@ -124,43 +124,48 @@ function initApp() {
     const handleUpload = async (file, role) => {
         if (!file) return;
         
+        // INSTANT LOAD: Render PDF in viewer before API call
         if (role === 'main') {
-            statusMsg.textContent = `Analyzing main paper: ${file.name} (Extracting references)...`;
+            emptyState.classList.add('hidden');
+            pdfContainer.classList.remove('hidden');
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    viewer.loadPdf(e.target.result);
+                } catch (err) {
+                    console.error('Initial PDF render failed:', err);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            statusMsg.textContent = `Analyzing main paper: ${file.name}...`;
         } else {
-            statusMsg.textContent = `Ingesting: ${file.name}...`;
+            statusMsg.textContent = `Adding source: ${file.name}...`;
         }
+
+        // Show Skeleton in Sidebar
+        const skeleton = document.createElement('div');
+        skeleton.className = 'skeleton-item skeleton-pulse';
+        skeleton.innerHTML = '<div class="skeleton-icon"></div><div class="skeleton-text"></div>';
+        libraryList.prepend(skeleton);
         
         try {
             const data = await ApiClient.ingestPdf(file, role);
             
             if (role === 'main') {
-                statusMsg.textContent = `Indexed: ${data.num_pages} pages, ${data.num_chunks} chunks. Ready.`;
+                statusMsg.textContent = `Indexing complete: ${data.num_pages} pages, ${data.num_chunks} chunks.`;
                 appContext.currentPdfId = data.paper_id;
                 appContext.currentPdfName = file.name;
-                
-                // Show in viewer
-                emptyState.classList.add('hidden');
-                pdfContainer.classList.remove('hidden');
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        viewer.loadPdf(e.target.result);
-                    } catch (err) {
-                        console.error('PDF view error:', err);
-                        statusMsg.textContent = 'Render failed.';
-                    }
-                };
-                reader.readAsArrayBuffer(file);
             } else {
-                statusMsg.textContent = `Completed: ${file.name}`;
+                statusMsg.textContent = `Source added: ${file.name}`;
             }
 
-            // Refresh library view
+            // Refresh library view (replaces skeletons with real items)
             await refreshLibrary();
         } catch (e) {
             console.error('Upload failed details:', e);
             statusMsg.textContent = `Upload failed: ${e.message}`;
+            skeleton.remove(); // Remove failed skeleton
         }
     };
 

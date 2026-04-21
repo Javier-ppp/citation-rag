@@ -58,11 +58,12 @@ class PdfViewer {
             
             await page.render(renderContext).promise;
             
-            // Setup text layer
-            this.textLayer.style.left = this.canvas.offsetLeft + 'px';
-            this.textLayer.style.top = this.canvas.offsetTop + 'px';
-            this.textLayer.style.height = viewport.height + 'px';
+            // Setup text layer container to match canvas dimensions
             this.textLayer.style.width = viewport.width + 'px';
+            this.textLayer.style.height = viewport.height + 'px';
+            // Align with canvas within the relative container
+            this.textLayer.style.left = '0';
+            this.textLayer.style.top = '0';
             
             // Clear old text layer
             this.textLayer.innerHTML = '';

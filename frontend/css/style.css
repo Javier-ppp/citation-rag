@@ -329,6 +329,49 @@ body {
   border: 1px solid var(--border-color);
 }
 
+/* Skeleton Loading */
+.skeleton-item {
+    padding: 10px 14px;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.skeleton-icon {
+    width: 14px;
+    height: 14px;
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+.skeleton-text {
+    height: 10px;
+    background: var(--border-color);
+    border-radius: 4px;
+    flex: 1;
+}
+
+.skeleton-pulse {
+    animation: skeleton-shimmer 1.5s infinite linear;
+    background: linear-gradient(
+        90deg,
+        var(--border-color) 0%,
+        var(--bg-color) 50%,
+        var(--border-color) 100%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
 /* Middle Pane (PDF) */
 .viewer-pane {
   flex: 1; /* Stretch to fill space between library and search */
@@ -362,6 +405,36 @@ body {
   display: flex;
   justify-content: center;
   padding: 24px;
+}
+
+.pdf-container {
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Fix for Selectable Text Layer */
+.textLayer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    opacity: 0.2; /* Subtle visibility for debugging, usually 1.0 with transparent text */
+    line-height: 1.0;
+    mix-blend-mode: multiply;
+}
+
+.textLayer > span {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+}
+
+.textLayer ::selection {
+    background: rgba(15, 155, 142, 0.4);
 }
 
 /* Right Pane (Search) */
