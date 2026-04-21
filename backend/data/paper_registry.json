@@ -1,54 +1,54 @@
 {
-  "d22388f1-23c0-4d77-b34d-20eb5abe1c39": {
-    "paper_id": "d22388f1-23c0-4d77-b34d-20eb5abe1c39",
-    "title": "dummy_citing_paper",
-    "first_author": "Multiple",
+  "3ab4077d-1f2b-4ba2-9982-e352e0bb03d3": {
+    "paper_id": "3ab4077d-1f2b-4ba2-9982-e352e0bb03d3",
+    "title": "Evaluation of Multi-Agent Systems and Transformers",
+    "first_author": null,
     "year": "2026",
     "filename": "dummy_citing_paper.pdf",
     "num_references": 5,
     "role": "main"
   },
-  "5ae11612-fddd-4bb9-926d-1e141f596404": {
-    "paper_id": "5ae11612-fddd-4bb9-926d-1e141f596404",
-    "title": "paper1_sam2",
-    "first_author": "Multiple",
-    "year": "2026",
+  "3dc585bb-cdca-414d-8754-a6b8f3033a9a": {
+    "paper_id": "3dc585bb-cdca-414d-8754-a6b8f3033a9a",
+    "title": "DeepSORT-Driven Visual Tracking Approach for Gesture Recognition in Interactive Systems",
+    "first_author": "Tong Zhang",
+    "year": "None",
     "filename": "paper1_sam2.pdf",
     "num_references": 21,
     "role": "source"
   },
-  "f03e12f1-ee0f-4760-b4c8-480f946d5bbf": {
-    "paper_id": "f03e12f1-ee0f-4760-b4c8-480f946d5bbf",
-    "title": "paper2_small_lm",
-    "first_author": "Multiple",
-    "year": "2026",
+  "21107d5a-5dc6-4409-874e-ba6e27e6aab8": {
+    "paper_id": "21107d5a-5dc6-4409-874e-ba6e27e6aab8",
+    "title": "Small Language Models are the Future of Agentic AI",
+    "first_author": "Peter Belcak",
+    "year": "None",
     "filename": "paper2_small_lm.pdf",
     "num_references": 0,
     "role": "source"
   },
-  "ff2aa218-2edf-4a4e-b282-7444782a99ee": {
-    "paper_id": "ff2aa218-2edf-4a4e-b282-7444782a99ee",
-    "title": "paper3_attention",
-    "first_author": "Multiple",
-    "year": "2026",
+  "fd5ca408-2b6b-4b29-b811-7e0d74b9c72a": {
+    "paper_id": "fd5ca408-2b6b-4b29-b811-7e0d74b9c72a",
+    "title": "Attention Is All You Need",
+    "first_author": "Ashish Vaswani",
+    "year": "None",
     "filename": "paper3_attention.pdf",
     "num_references": 40,
     "role": "source"
   },
-  "84abcb57-612b-4591-a094-c0d0cc612360": {
-    "paper_id": "84abcb57-612b-4591-a094-c0d0cc612360",
-    "title": "paper4_trading_agents",
-    "first_author": "Multiple",
-    "year": "2026",
+  "d6433174-1d55-4740-a0a3-5cb3470a1f04": {
+    "paper_id": "d6433174-1d55-4740-a0a3-5cb3470a1f04",
+    "title": "DeepSeek-V3 Technical Report",
+    "first_author": null,
+    "year": "2025",
     "filename": "paper4_trading_agents.pdf",
     "num_references": 0,
     "role": "source"
   },
-  "525741c0-7f76-4661-a788-3e7a35334b50": {
-    "paper_id": "525741c0-7f76-4661-a788-3e7a35334b50",
-    "title": "paper5_generic",
-    "first_author": "Multiple",
-    "year": "2026",
+  "c73951f1-73c9-4ac7-8cc9-269ac8aa45f5": {
+    "paper_id": "c73951f1-73c9-4ac7-8cc9-269ac8aa45f5",
+    "title": "The doubly librating Plutinos",
+    "first_author": "Renu Malhotra and Takashi Ito",
+    "year": "2025",
     "filename": "paper5_generic.pdf",
     "num_references": 0,
     "role": "source"

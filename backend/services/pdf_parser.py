@@ -28,7 +28,8 @@ def parse_pdf(pdf_path: str) -> Dict[str, Any]:
         
         return {
             "num_pages": len(doc),
-            "pages": pages
+            "pages": pages,
+            "metadata_hint": pages[0].text[:2000] if pages else ""
         }
     except Exception as e:
         raise ValueError(f"Failed to parse PDF {pdf_path}: {str(e)}")

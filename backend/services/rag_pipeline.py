@@ -11,6 +11,8 @@ from backend.services.vector_store import store_chunks, search_query, get_collec
 from backend.services.llm_client import generate_response
 from backend.services.references_store import refs_store, REFERENCES_PATH
 import shutil
+import json
+import re
 
 async def clear_all_data() -> bool:
     """Wipes all persistent data to start a fresh session."""
@@ -52,6 +54,35 @@ async def clear_all_data() -> bool:
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+async def extract_metadata(text_hint: str, filename: str) -> Dict[str, str]:
+    """Uses LLM to extract clean metadata from the first page text."""
+    prompt = (
+        f"Extract bibliographic metadata from the following PDF start text.\n"
+        f"Return ONLY a JSON object with keys: 'title', 'first_author', 'year'.\n"
+        f"If you cannot find a field, use the filename hint: {filename}\n"
+        f"Text: {text_hint[:2000]}"
+    )
+    
+    try:
+        response = await generate_response(prompt)
+        # Find JSON block in response
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group(0))
+            return {
+                "title": data.get("title", filename.replace(".pdf", "")),
+                "first_author": data.get("first_author", "Unknown"),
+                "year": str(data.get("year", "2026"))
+            }
+    except Exception as e:
+        logger.warning(f"[METADATA] LLM extraction failed: {e}")
+        
+    return {
+        "title": filename.replace(".pdf", ""),
+        "first_author": "Unknown",
+        "year": "2026"
+    }
+
 async def ingest_pdf(pdf_path: str, filename: str, role: str = "source") -> Dict[str, Any]:
     logger.info(f"[INGEST] Starting: {filename} as {role}")
     
@@ -82,12 +113,15 @@ async def ingest_pdf(pdf_path: str, filename: str, role: str = "source") -> Dict
     refs_store.store_references(paper_id, references)
     logger.info(f"[INGEST] Detected {len(references)} references.")
     
-    # Extract metadata
+    # Extract metadata using AI
+    metadata_hint = parsed_data.get("metadata_hint", "")
+    ai_meta = await extract_metadata(metadata_hint, filename)
+    
     metadata = {
         "paper_id": paper_id,
-        "title": filename.replace(".pdf", ""),
-        "first_author": "Multiple" if len(parsed_data["pages"]) > 0 else "Unknown",
-        "year": "2026",
+        "title": ai_meta["title"],
+        "first_author": ai_meta["first_author"],
+        "year": ai_meta["year"],
         "filename": filename,
         "num_references": len(references),
         "role": role

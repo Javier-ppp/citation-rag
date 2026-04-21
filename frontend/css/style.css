@@ -246,6 +246,42 @@ body {
   white-space: nowrap;
 }
 
+.library-item.missing {
+  color: var(--error-text);
+  border: 1px dashed var(--error-bg);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.library-item.missing svg {
+  color: var(--error-text);
+}
+
+.ref-num {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-right: 4px;
+}
+
+.library-item.missing .ref-num {
+  color: var(--error-text);
+}
+
+.status-badge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.status-badge.unlinked {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
 /* Middle Pane (PDF) */
 .viewer-pane {
   flex: 1; /* Stretch to fill space between library and search */

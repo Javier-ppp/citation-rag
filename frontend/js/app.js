@@ -35,12 +35,19 @@ function initApp() {
             papers.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'library-item';
+                if (p.status === 'missing') item.classList.add('missing');
+                
                 const roleClass = p.role === 'main' ? 'main' : 'source';
+                const refNumText = p.ref_number ? `<span class="ref-num">[${p.ref_number}]</span> ` : '';
+                const displayText = p.status === 'missing' ? p.title : p.filename;
+                const statusBadge = p.status === 'unlinked' ? '<span class="status-badge unlinked">Unlinked</span>' : '';
+                
                 item.innerHTML = `
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-                    <div class="library-item-content" title="${p.filename}">
-                        ${p.filename} 
+                    <div class="library-item-content" title="${displayText}">
+                        ${refNumText}${displayText} 
                         <span class="role-badge ${roleClass}">${p.role}</span>
+                        ${statusBadge}
                     </div>
                 `;
                 libraryList.appendChild(item);
