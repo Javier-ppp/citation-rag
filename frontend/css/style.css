@@ -58,6 +58,53 @@ body {
   color: var(--text-main);
 }
 
+.logo.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+  user-select: none;
+}
+
+.logo.clickable:hover {
+  transform: scale(1.02);
+  text-shadow: 0 0 15px rgba(15, 155, 142, 0.4);
+}
+
+.logo.clickable:active {
+  transform: scale(0.98);
+}
+
+/* Resizers */
+.resizer {
+    width: 6px;
+    cursor: col-resize;
+    background-color: transparent;
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+.resizer::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--border-color);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.resizer:hover::after {
+    background-color: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+.resizer.active::after {
+    background-color: var(--accent-hover);
+    width: 2px;
+}
+
 .toolbar-actions {
   display: flex;
   align-items: center;
@@ -515,4 +562,15 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* pulsing animation for badges */
+.pulsing {
+    animation: badge-pulse 2s ease-in-out;
+}
+
+@keyframes badge-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(15, 155, 142, 0); }
+    50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(15, 155, 142, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(15, 155, 142, 0); }
 }

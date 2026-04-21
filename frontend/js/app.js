@@ -20,13 +20,56 @@ function initApp() {
     // Hook viewer events to overlay
     viewer.onPageRendered = (textLayerElement) => overlay.processTextLayer(textLayerElement);
 
-    // Sidebar Logic
+    // Sidebar Logic (Logo Toggle)
     const libraryPane = document.getElementById('library-pane');
     const libraryList = document.getElementById('library-list');
-    document.getElementById('toggle-library').addEventListener('click', (e) => {
+    document.getElementById('app-logo').addEventListener('click', (e) => {
         e.preventDefault();
         libraryPane.classList.toggle('collapsed');
+        // Trigger a fake resize event to help PDF canvas stay centered if needed
+        window.dispatchEvent(new Event('resize'));
     });
+
+    // Resize Logic
+    const initResizers = () => {
+        const leftResizer = document.getElementById('left-resizer');
+        const rightResizer = document.getElementById('right-resizer');
+        const searchPane = document.querySelector('.search-pane');
+        
+        const handleDrag = (resizer, target, isRight = false) => {
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                document.body.style.cursor = 'col-resize';
+                resizer.classList.add('active');
+                
+                const onMouseMove = (moveEvent) => {
+                    let newWidth;
+                    if (isRight) {
+                        newWidth = window.innerWidth - moveEvent.clientX;
+                        target.style.flex = `0 0 ${Math.max(200, Math.min(600, newWidth))}px`;
+                    } else {
+                        newWidth = moveEvent.clientX;
+                        target.style.flex = `0 0 ${Math.max(150, Math.min(500, newWidth))}px`;
+                    }
+                };
+                
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    document.body.style.cursor = 'default';
+                    resizer.classList.remove('active');
+                    window.dispatchEvent(new Event('resize'));
+                };
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        };
+        
+        handleDrag(leftResizer, libraryPane);
+        handleDrag(rightResizer, searchPane, true);
+    };
+    initResizers();
 
     const refreshLibrary = async () => {
         try {
@@ -55,6 +98,8 @@ function initApp() {
                 // Update current paper display if this is the main paper
                 if (p.role === 'main') {
                     document.getElementById('current-paper-display').textContent = p.filename;
+                    document.getElementById('current-paper-display').classList.add('pulsing');
+                    setTimeout(() => document.getElementById('current-paper-display').classList.remove('pulsing'), 2000);
                 }
             });
         } catch (e) {
@@ -78,23 +123,18 @@ function initApp() {
 
     const handleUpload = async (file, role) => {
         if (!file) return;
-        statusMsg.textContent = `Ingesting ${role} paper...`;
+        
+        if (role === 'main') {
+            statusMsg.textContent = `Analyzing main paper: ${file.name} (Extracting references)...`;
+        } else {
+            statusMsg.textContent = `Ingesting: ${file.name}...`;
+        }
         
         try {
             const data = await ApiClient.ingestPdf(file, role);
-            statusMsg.textContent = `Indexed: ${data.num_pages} pages, ${data.num_chunks} chunks.`;
-
-            // CRITICAL: Clear input so same file can be re-selected later
-            if (role === 'main') {
-                document.getElementById('main-upload').value = '';
-            } else {
-                document.getElementById('source-upload').value = '';
-            }
             
-            // Refresh library view
-            await refreshLibrary();
-
             if (role === 'main') {
+                statusMsg.textContent = `Indexed: ${data.num_pages} pages, ${data.num_chunks} chunks. Ready.`;
                 appContext.currentPdfId = data.paper_id;
                 appContext.currentPdfName = file.name;
                 
@@ -112,15 +152,35 @@ function initApp() {
                     }
                 };
                 reader.readAsArrayBuffer(file);
+            } else {
+                statusMsg.textContent = `Completed: ${file.name}`;
             }
+
+            // Refresh library view
+            await refreshLibrary();
         } catch (e) {
             console.error('Upload failed details:', e);
             statusMsg.textContent = `Upload failed: ${e.message}`;
         }
     };
 
-    document.getElementById('main-upload').addEventListener('change', (e) => handleUpload(e.target.files[0], 'main'));
-    document.getElementById('source-upload').addEventListener('change', (e) => handleUpload(e.target.files[0], 'source'));
+    document.getElementById('main-upload').addEventListener('change', (e) => {
+        handleUpload(e.target.files[0], 'main');
+        e.target.value = ''; // Reset
+    });
+
+    document.getElementById('source-upload').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        const total = files.length;
+        for (let i = 0; i < total; i++) {
+            statusMsg.textContent = `Uploading sources: ${i + 1} of ${total}...`;
+            await handleUpload(files[i], 'source');
+        }
+        statusMsg.textContent = `Finished uploading ${total} papers.`;
+        e.target.value = ''; // Reset
+    });
 
     document.getElementById('reset-session').addEventListener('click', async (e) => {
         e.preventDefault();
