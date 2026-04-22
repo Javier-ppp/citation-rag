@@ -55,12 +55,16 @@ class CitedPaperInfo(BaseModel):
     authors: Optional[str]
     year: Optional[str]
 
+class CiteEvidence(BaseModel):
+    passage: str
+    page_num: int
+    supports: bool
+
 class CiteItem(BaseModel):
     found: bool
     ref_num: str
     cited_paper: Optional[CitedPaperInfo] = None
-    best_passage: Optional[str] = None
-    page_num: Optional[int] = None
+    evidences: List[CiteEvidence] = []
     confidence: Optional[float] = None
     message: Optional[str] = None
 

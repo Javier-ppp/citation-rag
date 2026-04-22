@@ -790,3 +790,62 @@ body {
   font-size: 0.9rem;
   color: var(--accent-primary);
 }
+
+/* Statement list styling */
+.statement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.statement-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-icon {
+  font-size: 1.1rem;
+  padding-top: 2px;
+  cursor: help;
+  user-select: none;
+}
+
+.passage-text.text-muted {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+/* Evidence items with symbols */
+.evidence-item {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.evidence-symbol {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.evidence-symbol.valid {
+  color: #10b981; /* Green */
+}
+
+.evidence-symbol.invalid {
+  color: #ef4444; /* Red */
+}
+
+.evidence-content {
+  flex: 1;
+}
+
+.evidence-page {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  opacity: 0.8;
+  margin-left: 4px;
+}

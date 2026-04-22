@@ -1,0 +1,10 @@
+--- frontend/js/citation-overlay.js	2026-04-22 14:00:00.000000000 +0300
++++ frontend/js/citation-overlay.js	2026-04-22 14:00:00.000000000 +0300
+@@ -95,7 +95,7 @@
+             }
+         } catch (e) {
+             console.error("Citation Fetch Error:", e);
+-            this.showError("Error connecting to backend.");
++            this.showError("JS Exception: " + e.message);
+         }
+     }

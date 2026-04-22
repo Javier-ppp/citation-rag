@@ -94,7 +94,8 @@ class CitationOverlay {
                 this.renderContent(data);
             }
         } catch (e) {
-            this.showError("Error connecting to backend.");
+            console.error("Citation Fetch Error:", e);
+            this.showError("JS Exception: " + e.message);
         }
     }
 
@@ -123,17 +124,33 @@ class CitationOverlay {
                 `;
             } else {
                 const confPercent = Math.round((item.confidence || 0) * 100);
+                let evidenceHtml = '';
+                
+                if (item.evidences && item.evidences.length > 0) {
+                    item.evidences.forEach(ev => {
+                        const symbol = ev.supports ? '✅' : '❌';
+                        const symbolClass = ev.supports ? 'valid' : 'invalid';
+                        evidenceHtml += `
+                            <div class="evidence-item">
+                                <span class="evidence-symbol ${symbolClass}">${symbol}</span>
+                                <div class="evidence-content">
+                                    "${ev.passage}" 
+                                    <span class="evidence-page">p. ${ev.page_num + 1}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    evidenceHtml = '<p class="passage-text">No specific evidence extracted.</p>';
+                }
+
                 itemDiv.innerHTML = `
                     <div class="tooltip-header">
                         <h4 class="tooltip-title">Ref [${item.ref_num}]: ${item.cited_paper?.title || "Unknown Title"}</h4>
                         <span class="tooltip-meta">${item.cited_paper?.authors || ''} (${item.cited_paper?.year || ''})</span>
                     </div>
                     <div class="tooltip-body">
-                        <p class="passage-text">"...${item.best_passage}..."</p>
-                    </div>
-                    <div class="tooltip-footer">
-                        <span class="confidence">Relevance: ${confPercent}%</span>
-                        <span class="page-ref">p. ${item.page_num !== undefined ? item.page_num + 1 : "?"}</span>
+                        ${evidenceHtml}
                     </div>
                 `;
             }
