@@ -1,6 +1,6 @@
 {
-  "0d379c7d-1a23-49f4-bfa0-59e8431c037e": {
-    "paper_id": "0d379c7d-1a23-49f4-bfa0-59e8431c037e",
+  "5c51c351-3307-4585-9a0f-5d077bcc9f2d": {
+    "paper_id": "5c51c351-3307-4585-9a0f-5d077bcc9f2d",
     "title": "Segment Anything in Images and Videos",
     "first_author": "Nikhila Ravi",
     "year": "2024",
@@ -8,8 +8,8 @@
     "num_references": 0,
     "role": "source"
   },
-  "2c579c86-f29d-48bb-a52b-6093be5d3d76": {
-    "paper_id": "2c579c86-f29d-48bb-a52b-6093be5d3d76",
+  "b5132a3a-151c-4a24-97dc-84b377a2ae08": {
+    "paper_id": "b5132a3a-151c-4a24-97dc-84b377a2ae08",
     "title": "Evaluation of Multi-Agent Systems and Transformers",
     "first_author": "Test Researcher",
     "year": "2026",
@@ -17,8 +17,8 @@
     "num_references": 5,
     "role": "main"
   },
-  "532c8eb0-d983-4c3d-b44c-8789439c30c8": {
-    "paper_id": "532c8eb0-d983-4c3d-b44c-8789439c30c8",
+  "9c85f190-58ff-4347-a541-1e89d34c2e08": {
+    "paper_id": "9c85f190-58ff-4347-a541-1e89d34c2e08",
     "title": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
     "first_author": "Yijia Xiao",
     "year": "2025",
@@ -26,17 +26,17 @@
     "num_references": 0,
     "role": "source"
   },
-  "f135c499-36a7-45dd-b5ec-debf64367177": {
-    "paper_id": "f135c499-36a7-45dd-b5ec-debf64367177",
+  "63584671-cca8-4588-a205-b39d4bbc26ca": {
+    "paper_id": "63584671-cca8-4588-a205-b39d4bbc26ca",
     "title": "Small Language Models are the Future of Agentic AI",
     "first_author": "Peter",
-    "year": "None",
+    "year": "2025",
     "filename": "paper2_small_lm.pdf",
     "num_references": 0,
     "role": "source"
   },
-  "fc1c7c60-8a9d-46ea-8a1f-5f56225f90b0": {
-    "paper_id": "fc1c7c60-8a9d-46ea-8a1f-5f56225f90b0",
+  "849b0ce6-5f0f-4d04-9abb-73aebfd91057": {
+    "paper_id": "849b0ce6-5f0f-4d04-9abb-73aebfd91057",
     "title": "Attention Is All You Need",
     "first_author": "Ashish",
     "year": "2023",
@@ -44,8 +44,8 @@
     "num_references": 40,
     "role": "source"
   },
-  "29ed1c6f-67ca-4e25-a428-b0b70a2338b7": {
-    "paper_id": "29ed1c6f-67ca-4e25-a428-b0b70a2338b7",
+  "363fc741-9339-4033-9e7a-dc31b5db5531": {
+    "paper_id": "363fc741-9339-4033-9e7a-dc31b5db5531",
     "title": "The doubly librating Plutinos",
     "first_author": "Renu Malhotra",
     "year": "2025",

@@ -69,6 +69,7 @@ class PdfViewer {
             // Setup text layer container to match canvas dimensions
             this.textLayer.style.width = viewport.width + 'px';
             this.textLayer.style.height = viewport.height + 'px';
+            this.textLayer.style.setProperty('--scale-factor', viewport.scale);
             // Align with canvas within the relative container
             this.textLayer.style.left = '0';
             this.textLayer.style.top = '0';

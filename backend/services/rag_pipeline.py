@@ -291,9 +291,27 @@ async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -
             evidences = []
             
             # Evaluate the top chunks sequentially (like forward search)
-            for i in range(min(3, len(results['documents'][0]))):
+            # Filter first to strongly avoid bibliography chunks
+            valid_chunks = []
+            for i in range(len(results['documents'][0])):
                 doc = results['documents'][0][i]
                 meta = results['metadatas'][0][i]
+                
+                # Heuristics for bibliography: dense brackets, arxiv links, or "References" header
+                doc_lower = doc.lower()
+                brackets = len(re.findall(r'\[\d{1,3}\]', doc))
+                arxivs = doc_lower.count("arxiv")
+                years = len(re.findall(r'\b20\d{2}\b', doc))
+                
+                if brackets > 4 or arxivs > 1 or (brackets >= 2 and years > 3):
+                    logger.info(f"Skipping likely bibliography chunk on page {meta['page_num']}")
+                    continue
+                if "references" in doc_lower[:50] and len(doc) < 1500:
+                    continue
+                
+                valid_chunks.append((doc, meta))
+                
+            for doc, meta in valid_chunks[:3]:
                 
                 extract_prompt = (
                     f"From the passage below, extract the 1-2 sentences that MOST DIRECTLY support "
