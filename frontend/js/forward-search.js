@@ -53,11 +53,10 @@ class ForwardSearch {
         
         results.forEach(res => {
             const card = document.createElement('div');
-            card.className = 'result-card';
+            card.className = 'result-card clickable';
             
             const confPercent = Math.round(res.relevance_score * 100);
             const hasContext = res.full_chunk && res.full_chunk !== res.passage;
-            const contextId = `ctx-${Math.random().toString(36).slice(2)}`;
             
             card.innerHTML = `
                 <div class="card-header">
@@ -66,7 +65,7 @@ class ForwardSearch {
                 </div>
                 <div class="card-passage">${res.passage}</div>
                 ${hasContext ? `
-                <div class="card-context-toggle" onclick="this.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('Show') ? '▲ Hide context' : '▼ Show full context'">
+                <div class="card-context-toggle" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent.includes('Show') ? '▲ Hide context' : '▼ Show full context'">
                     ▼ Show full context
                 </div>
                 <div class="card-full-context hidden">${res.full_chunk}</div>
@@ -75,6 +74,13 @@ class ForwardSearch {
                     <strong>Why relevant:</strong> ${res.llm_explanation || 'No analysis provided.'}
                 </div>
             `;
+            
+            card.addEventListener('click', () => {
+                if (this.onResultClick) {
+                    this.onResultClick(res);
+                }
+            });
+
             this.container.appendChild(card);
         });
     }

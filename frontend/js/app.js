@@ -20,6 +20,19 @@ function initApp() {
     // Hook viewer events to overlay
     viewer.onPageRendered = (textLayerElement) => overlay.processTextLayer(textLayerElement);
 
+    // Forward Search navigation
+    search.onResultClick = (res) => {
+        if (res.page_num !== undefined) {
+            viewer.pageNum = res.page_num + 1; // 0-based to 1-based
+            viewer.renderPage(viewer.pageNum);
+            
+            // Allow time for page to render before highlighting
+            setTimeout(() => {
+                overlay.highlightPassage(res.passage);
+            }, 500);
+        }
+    };
+
     // Sidebar Logic (Logo Toggle)
     const libraryPane = document.getElementById('library-pane');
     const libraryList = document.getElementById('library-list');
@@ -35,13 +48,13 @@ function initApp() {
         const leftResizer = document.getElementById('left-resizer');
         const rightResizer = document.getElementById('right-resizer');
         const searchPane = document.querySelector('.search-pane');
-        
+
         const handleDrag = (resizer, target, isRight = false) => {
             resizer.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 document.body.style.cursor = 'col-resize';
                 resizer.classList.add('active');
-                
+
                 const onMouseMove = (moveEvent) => {
                     let newWidth;
                     if (isRight) {
@@ -52,7 +65,7 @@ function initApp() {
                         target.style.flex = `0 0 ${Math.max(150, Math.min(500, newWidth))}px`;
                     }
                 };
-                
+
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
@@ -60,12 +73,12 @@ function initApp() {
                     resizer.classList.remove('active');
                     window.dispatchEvent(new Event('resize'));
                 };
-                
+
                 document.addEventListener('mousemove', onMouseMove);
                 document.addEventListener('mouseup', onMouseUp);
             });
         };
-        
+
         handleDrag(leftResizer, libraryPane);
         handleDrag(rightResizer, searchPane, true);
     };
@@ -79,12 +92,12 @@ function initApp() {
                 const item = document.createElement('div');
                 item.className = 'library-item';
                 if (p.status === 'missing') item.classList.add('missing');
-                
+
                 const roleClass = p.role === 'main' ? 'main' : 'source';
                 const refNumText = p.ref_number ? `<span class="ref-num">[${p.ref_number}]</span> ` : '';
                 const displayText = p.status === 'missing' ? p.title : p.filename;
                 const statusBadge = p.status === 'unlinked' ? '<span class="status-badge unlinked">Unlinked</span>' : '';
-                
+
                 item.innerHTML = `
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
                     <div class="library-item-content" title="${displayText}">
@@ -123,12 +136,12 @@ function initApp() {
 
     const handleUpload = async (file, role) => {
         if (!file) return;
-        
+
         // INSTANT LOAD: Render PDF in viewer before API call
         if (role === 'main') {
             emptyState.classList.add('hidden');
             pdfContainer.classList.remove('hidden');
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -148,10 +161,10 @@ function initApp() {
         skeleton.className = 'skeleton-item skeleton-pulse';
         skeleton.innerHTML = '<div class="skeleton-icon"></div><div class="skeleton-text"></div>';
         libraryList.prepend(skeleton);
-        
+
         try {
             const data = await ApiClient.ingestPdf(file, role);
-            
+
             if (role === 'main') {
                 statusMsg.textContent = `Indexing complete: ${data.num_pages} pages, ${data.num_chunks} chunks.`;
                 appContext.currentPdfId = data.paper_id;
@@ -189,24 +202,24 @@ function initApp() {
 
     document.getElementById('reset-session').addEventListener('click', async (e) => {
         e.preventDefault();
-        
+
         // Confirmation dialog (stays up until clicked)
         const ok = confirm('Are you sure you want to reset the entire session? This will delete all papers.');
         if (!ok) return;
-        
+
         try {
             statusMsg.textContent = 'Resetting session...';
             await ApiClient.resetSession();
             statusMsg.textContent = 'Session reset successfully.';
-            
+
             // Clear viewer state
             appContext.currentPdfId = null;
             appContext.currentPdfName = null;
-            
+
             document.getElementById('current-paper-display').textContent = 'No Paper Loaded';
             pdfContainer.classList.add('hidden');
             emptyState.classList.remove('hidden');
-            
+
             // Clear library
             await refreshLibrary();
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,43 +8,62 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
     <!-- PDF.js native CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css?v=10">
-    
+
     <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Main Toolbar -->
         <header class="app-header">
             <div class="logo clickable" id="app-logo" title="Toggle Library Sidebar">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                </svg>
                 <span>Citation RAG</span>
                 <span id="current-paper-display" class="current-paper-badge">No Paper Loaded</span>
             </div>
             <div class="toolbar-actions">
-                
+
                 <div class="ingest-group">
-                    <label for="main-upload" class="btn btn-primary" id="main-upload-label" title="Upload the primary paper you want to read">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    <label for="main-upload" class="btn btn-primary" id="main-upload-label"
+                        title="Upload the primary paper you want to read">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
                         <span>Set Main Paper</span>
                     </label>
                     <input type="file" id="main-upload" accept="application/pdf" style="display: none;">
 
-                    <label for="source-upload" class="btn btn-secondary" id="source-upload-label" title="Add reference papers for the citation database (Multiple allowed)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <label for="source-upload" class="btn btn-secondary" id="source-upload-label"
+                        title="Add reference papers for the citation database (Multiple allowed)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
                         <span>Add Source</span>
                     </label>
                     <input type="file" id="source-upload" accept="application/pdf" multiple style="display: none;">
                 </div>
-                
+
                 <span id="upload-status" class="status-msg"></span>
             </div>
         </header>
@@ -53,8 +73,13 @@
             <aside class="library-pane collapsed" id="library-pane">
                 <div class="panel-header space-between">
                     <h3>Paper Library</h3>
-                    <button type="button" id="reset-session" class="btn btn-tertiary danger-hover" title="Reset everything">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                    <button type="button" id="reset-session" class="btn btn-tertiary danger-hover"
+                        title="Reset everything">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2">
+                            </path>
+                        </svg>
                         <span>Reset</span>
                     </button>
                 </div>
@@ -69,11 +94,17 @@
             <section class="viewer-pane">
                 <div class="viewer-toolbar">
                     <button type="button" class="btn btn-icon" id="prev-page" title="Previous Page">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
                     </button>
                     <span class="page-info">Page <span id="page-num">0</span> of <span id="page-count">0</span></span>
                     <button type="button" class="btn btn-icon" id="next-page" title="Next Page">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
                     </button>
                     <div class="zoom-controls">
                         <button type="button" class="btn btn-icon" id="zoom-out" title="Zoom Out">-</button>
@@ -81,10 +112,17 @@
                         <button type="button" class="btn btn-icon" id="zoom-in" title="Zoom In">+</button>
                     </div>
                 </div>
-                
+
                 <div class="pdf-container-wrapper" id="pdf-container-wrapper">
                     <div class="empty-state" id="pdf-empty-state">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
                         <p>Upload a PDF to begin reading</p>
                     </div>
                     <div id="pdf-container" class="pdf-container hidden">
@@ -103,15 +141,19 @@
                     <h2>Forward Search</h2>
                     <p class="subtitle">Find supporting evidence across the database</p>
                 </div>
-                
+
                 <div class="search-input-group">
                     <textarea id="search-query" rows="3" placeholder="Type or paste a claim here..."></textarea>
                     <button type="button" id="search-btn" class="btn btn-primary full-width">Search Database</button>
                 </div>
-                
+
                 <div id="search-results" class="results-container">
                     <div class="empty-state">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
                         <p>Search results will appear here</p>
                     </div>
                 </div>
@@ -138,7 +180,11 @@
             </div>
         </div>
         <div id="tooltip-error" class="tooltip-error hidden">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
             <p id="tooltip-error-msg">Paper not found. Please ingest it first.</p>
         </div>
     </div>
@@ -149,4 +195,5 @@
     <script src="js/forward-search.js?v=10"></script>
     <script src="js/app.js?v=10"></script>
 </body>
+
 </html>

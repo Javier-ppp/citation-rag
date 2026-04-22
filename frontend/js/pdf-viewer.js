@@ -4,13 +4,13 @@ class PdfViewer {
         this.canvas = document.getElementById(canvasId);
         this.textLayer = document.getElementById(textLayerId);
         this.ctx = this.canvas.getContext('2d', { alpha: false });
-        
+
         this.pdfDoc = null;
         this.pageNum = 1;
         this.pageRendering = false;
         this.pageNumPending = null;
         this.scale = 1.2;
-        
+
         // Callbacks
         this.onPageRendered = null;
     }
@@ -41,35 +41,43 @@ class PdfViewer {
 
     async renderPage(num) {
         this.pageRendering = true;
-        
+
         try {
             const page = await this.pdfDoc.getPage(num);
             const viewport = page.getViewport({ scale: this.scale });
-            
+
             // Setup canvas
             this.canvas.height = viewport.height;
             this.canvas.width = viewport.width;
-            
+
             // Render PDF page to canvas
             const renderContext = {
                 canvasContext: this.ctx,
                 viewport: viewport
             };
-            
+
             await page.render(renderContext).promise;
             
+            // CRITICAL SYNC: Ensure the parent container exactly fits the canvas.
+            // This prevents the 'textLayer' (left: 0) from drifting if the container is wider than the PDF.
+            const innerContainer = this.canvas.parentElement;
+            if (innerContainer) {
+                innerContainer.style.width = viewport.width + 'px';
+                innerContainer.style.height = viewport.height + 'px';
+            }
+
             // Setup text layer container to match canvas dimensions
             this.textLayer.style.width = viewport.width + 'px';
             this.textLayer.style.height = viewport.height + 'px';
             // Align with canvas within the relative container
             this.textLayer.style.left = '0';
             this.textLayer.style.top = '0';
-            
+
             // Clear old text layer
             this.textLayer.innerHTML = '';
-            
+
             const textContent = await page.getTextContent();
-            
+
             // Render text layer
             await pdfjsLib.renderTextLayer({
                 textContentSource: textContent,
@@ -77,14 +85,14 @@ class PdfViewer {
                 viewport: viewport,
                 textDivs: []
             }).promise;
-            
+
             this.pageRendering = false;
-            
+
             // Trigger callback for overlays
             if (this.onPageRendered) {
                 this.onPageRendered(this.textLayer, textContent.items);
             }
-            
+
             if (this.pageNumPending !== null) {
                 this.renderPage(this.pageNumPending);
                 this.pageNumPending = null;
@@ -93,7 +101,7 @@ class PdfViewer {
             console.error('Error rendering page:', error);
             this.pageRendering = false;
         }
-        
+
         document.getElementById('page-num').textContent = num;
     }
 
@@ -116,13 +124,13 @@ class PdfViewer {
         this.pageNum++;
         this.queueRenderPage(this.pageNum);
     }
-    
+
     zoomIn() {
         this.scale += 0.2;
         document.getElementById('zoom-val').textContent = Math.round(this.scale * 100) + '%';
         this.queueRenderPage(this.pageNum);
     }
-    
+
     zoomOut() {
         if (this.scale <= 0.4) return;
         this.scale -= 0.2;
