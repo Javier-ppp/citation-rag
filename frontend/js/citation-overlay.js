@@ -100,16 +100,45 @@ class CitationOverlay {
 
     renderContent(data) {
         document.getElementById('tooltip-loading').classList.add('hidden');
-        document.getElementById('tooltip-content').classList.remove('hidden');
+        const content = document.getElementById('tooltip-content');
+        content.classList.remove('hidden');
 
-        document.getElementById('tooltip-title').textContent = data.cited_paper?.title || "Unknown Title";
-        document.getElementById('tooltip-authors').textContent = `${data.cited_paper?.authors || ''} (${data.cited_paper?.year || ''})`;
-        document.getElementById('tooltip-passage').textContent = `"...${data.best_passage}..."`;
-        document.getElementById('tooltip-page').textContent = data.page_num !== undefined ? data.page_num + 1 : "?";
+        // Clear previous content to handle results dynamically
+        content.innerHTML = '';
 
-        if (data.confidence) {
-            document.getElementById('tooltip-confidence').textContent = `Relevance Match: ${Math.round(data.confidence * 100)}%`;
-        }
+        const results = data.results || [];
+
+        results.forEach((item, idx) => {
+            if (idx > 0) content.appendChild(document.createElement('hr'));
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'tooltip-item';
+            
+            if (!item.found) {
+                itemDiv.innerHTML = `
+                    <div class="tooltip-header">
+                        <h4 class="tooltip-subtitle">Ref [${item.ref_num}]</h4>
+                        <span class="tooltip-meta">${item.message}</span>
+                    </div>
+                `;
+            } else {
+                const confPercent = Math.round((item.confidence || 0) * 100);
+                itemDiv.innerHTML = `
+                    <div class="tooltip-header">
+                        <h4 class="tooltip-title">Ref [${item.ref_num}]: ${item.cited_paper?.title || "Unknown Title"}</h4>
+                        <span class="tooltip-meta">${item.cited_paper?.authors || ''} (${item.cited_paper?.year || ''})</span>
+                    </div>
+                    <div class="tooltip-body">
+                        <p class="passage-text">"...${item.best_passage}..."</p>
+                    </div>
+                    <div class="tooltip-footer">
+                        <span class="confidence">Relevance: ${confPercent}%</span>
+                        <span class="page-ref">p. ${item.page_num !== undefined ? item.page_num + 1 : "?"}</span>
+                    </div>
+                `;
+            }
+            content.appendChild(itemDiv);
+        });
     }
 
     showError(msg) {

@@ -765,3 +765,28 @@ body {
   animation: highlight-pulse 2.5s ease-out forwards;
   border-radius: 2px;
 }
+
+/* Multi-citation tooltip styles */
+.tooltip-item {
+  padding: 4px 0;
+}
+
+.citation-tooltip hr {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 12px 0;
+  opacity: 0.5;
+}
+
+.tooltip-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  line-height: 1.4;
+}
+
+.tooltip-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--accent-primary);
+}

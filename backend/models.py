@@ -55,10 +55,17 @@ class CitedPaperInfo(BaseModel):
     authors: Optional[str]
     year: Optional[str]
 
-class CiteCheckResponse(BaseModel):
+class CiteItem(BaseModel):
     found: bool
-    message: Optional[str] = None
+    ref_num: str
     cited_paper: Optional[CitedPaperInfo] = None
     best_passage: Optional[str] = None
     page_num: Optional[int] = None
     confidence: Optional[float] = None
+    message: Optional[str] = None
+
+class CiteCheckResponse(BaseModel):
+    found: bool
+    is_multi: bool = False
+    results: List[CiteItem] = []
+    message: Optional[str] = None

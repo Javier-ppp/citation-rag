@@ -226,53 +226,95 @@ async def forward_search(query: str, top_k: int = 5) -> Dict[str, Any]:
 
 async def backward_cite_check(citation_marker: str, context: str, pdf_id: str) -> Dict[str, Any]:
     logger.info(f"[CITE] Checking {citation_marker} in paper {pdf_id}")
+    
+    # 1. Parse citation numbers (handles [1], [1,2], [1-3] etc.)
+    # Clean brackets and split by comma or dash
+    inner = citation_marker.strip("[]")
+    nums = []
+    
+    # regex to find ranges like 1-3
+    range_matches = re.findall(r'(\d+)\s*[\-\u2013\u2014]\s*(\d+)', inner)
+    for start, end in range_matches:
+        for i in range(int(start), int(end) + 1):
+            nums.append(str(i))
+    
+    # regex to find individual numbers not in ranges
+    # (Simplified: just grab all digits and deduplicate)
+    digit_matches = re.findall(r'\d+', inner)
+    for d in digit_matches:
+        if d not in nums:
+            nums.append(d)
+    
+    if not nums:
+        return {"found": False, "message": "No valid citation numbers found."}
+
     paper = get_paper(pdf_id)
     if not paper:
-        return {"found": False, "message": "Source paper not found in registry."}
+        return {"found": False, "message": "Main paper not found in registry."}
         
     refs = refs_store.get_references(pdf_id)
-    ref_num = citation_marker.strip("[]")
-    
-    target_ref = next((r for r in refs if r["ref_number"] == ref_num), None)
-    
-    matched_paper_id = None
-    if target_ref:
-        logger.info(f"[CITE] Found reference entry: {target_ref['parsed_title'][:30]}...")
+    all_results = []
+
+    for ref_num in nums:
+        target_ref = next((r for r in refs if r["ref_number"] == ref_num), None)
+        if not target_ref:
+            logger.warning(f"[CITE] Ref {ref_num} not found in this paper's reference list.")
+            continue
+            
         matched_paper_id = match_reference(target_ref)
         if not matched_paper_id:
-            logger.warning("[CITE] Cited paper metadata found but paper not in database.")
-            return {"found": False, "message": "Cited paper not found in the 'Source' database. Please ingest it first."}
-    else:
-        logger.warning(f"[CITE] Reference marker {citation_marker} not found in paper's reference list.")
-        return {"found": False, "message": "Citation marker not found in reference list."}
-            
-    query = f"Context: {context}. Find supporting evidence."
-    query_emb = embed_text(query)
-    
-    # matched_paper_id is verified to be a 'source' paper in match_reference
-    results = search_query(query_emb, top_k=3, paper_id=matched_paper_id)
-    
-    if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
-        return {"found": False, "message": "No supporting evidence found in the cited source."}
+            logger.warning(f"[CITE] Paper for Ref {ref_num} ({target_ref['parsed_title'][:20]}) not ingested.")
+            all_results.append({
+                "found": False,
+                "ref_num": ref_num,
+                "title": target_ref.get("parsed_title", "Unknown"),
+                "message": "Paper not found in library."
+            })
+            continue
+
+        # PERFORM SEARCH for THIS PAPER ONLY
+        query = f"Context: {context}. Find supporting evidence."
+        query_emb = embed_text(query)
         
-    best_doc = results['documents'][0][0]
-    best_meta = results['metadatas'][0][0]
-    
-    prompt = f"Extract the most relevant 1-2 sentences from this passage that clearly support the claim: '{context}'.\nPassage: {best_doc}"
-    extracted = await generate_response(prompt)
-    
-    cited_paper_info = get_paper(best_meta["paper_id"])
-    
+        results = search_query(query_emb, top_k=2, paper_id=matched_paper_id)
+        
+        if not results or not results.get('documents') or len(results['documents']) == 0 or len(results['documents'][0]) == 0:
+            all_results.append({
+                "found": False,
+                "ref_num": ref_num,
+                "title": target_ref.get("parsed_title", "Unknown"),
+                "message": "No evidence found in this paper."
+            })
+            continue
+            
+        best_doc = results['documents'][0][0]
+        best_meta = results['metadatas'][0][0]
+        
+        prompt = f"Extract the most relevant 1-2 sentences from this passage that clearly support the claim: '{context}'.\nPassage: {best_doc}"
+        extracted = await generate_response(prompt)
+        
+        cited_paper_info = get_paper(matched_paper_id)
+        
+        all_results.append({
+            "found": True,
+            "ref_num": ref_num,
+            "cited_paper": {
+                "title": cited_paper_info.get("title", "Unknown"),
+                "authors": cited_paper_info.get("first_author", "Unknown"),
+                "year": cited_paper_info.get("year", "Unknown")
+            },
+            "best_passage": extracted if extracted else best_doc,
+            "page_num": best_meta["page_num"],
+            "confidence": 1.0 / (1.0 + results['distances'][0][0])
+        })
+
+    if not all_results:
+        return {"found": False, "message": "No citations matched your library."}
+        
     return {
-        "found": True,
-        "cited_paper": {
-            "title": cited_paper_info.get("title") if cited_paper_info else "Unknown",
-            "authors": cited_paper_info.get("first_author") if cited_paper_info else "Unknown",
-            "year": cited_paper_info.get("year") if cited_paper_info else "Unknown"
-        },
-        "best_passage": extracted if extracted else best_doc,
-        "page_num": best_meta["page_num"],
-        "confidence": 1.0 / (1.0 + results['distances'][0][0])
+        "found": True, 
+        "is_multi": len(all_results) > 1,
+        "results": all_results
     }
 
 

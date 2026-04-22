@@ -1,15 +1,6 @@
 {
-  "4c50a5f7-4afa-4ae5-b36d-3f5e6552cd66": {
-    "paper_id": "4c50a5f7-4afa-4ae5-b36d-3f5e6552cd66",
-    "title": "Evaluation of Multi-Agent Systems and Transformers",
-    "first_author": "Test Researcher",
-    "year": "2026",
-    "filename": "dummy_citing_paper.pdf",
-    "num_references": 5,
-    "role": "main"
-  },
-  "746506bd-d83a-47ee-8055-10403a145df2": {
-    "paper_id": "746506bd-d83a-47ee-8055-10403a145df2",
+  "25f9d68a-b21f-44f4-9af6-d783597ecdc4": {
+    "paper_id": "25f9d68a-b21f-44f4-9af6-d783597ecdc4",
     "title": "Segment Anything in Images and Videos",
     "first_author": "Nikhila Ravi",
     "year": "2024",
@@ -17,8 +8,17 @@
     "num_references": 0,
     "role": "source"
   },
-  "b0ca256a-3e0d-4ef8-96c8-aa5dffa346e6": {
-    "paper_id": "b0ca256a-3e0d-4ef8-96c8-aa5dffa346e6",
+  "aa441682-bc5d-4f97-8b45-fd0fce4228bd": {
+    "paper_id": "aa441682-bc5d-4f97-8b45-fd0fce4228bd",
+    "title": "Evaluation of Multi-Agent Systems and Transformers",
+    "first_author": "Test Researcher",
+    "year": "2026",
+    "filename": "dummy_citing_paper.pdf",
+    "num_references": 5,
+    "role": "main"
+  },
+  "b3d4e7fe-21ad-470b-b50e-0b9d2f9714d4": {
+    "paper_id": "b3d4e7fe-21ad-470b-b50e-0b9d2f9714d4",
     "title": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
     "first_author": "Yijia Xiao",
     "year": "2025",
@@ -26,17 +26,17 @@
     "num_references": 0,
     "role": "source"
   },
-  "ea15aecb-e5bf-4ad2-b9ad-f36e0db51cac": {
-    "paper_id": "ea15aecb-e5bf-4ad2-b9ad-f36e0db51cac",
+  "ec346ca6-1008-4623-9d1c-d8333018a05d": {
+    "paper_id": "ec346ca6-1008-4623-9d1c-d8333018a05d",
     "title": "Small Language Models are the Future of Agentic AI",
-    "first_author": "Peter",
-    "year": "None",
+    "first_author": "Peter Belcak",
+    "year": "2025",
     "filename": "paper2_small_lm.pdf",
     "num_references": 0,
     "role": "source"
   },
-  "9d52c359-35de-45c4-841b-b6ad04900b71": {
-    "paper_id": "9d52c359-35de-45c4-841b-b6ad04900b71",
+  "249f66ad-37c7-4ab1-9bff-134f3e11e786": {
+    "paper_id": "249f66ad-37c7-4ab1-9bff-134f3e11e786",
     "title": "Attention Is All You Need",
     "first_author": "Ashish",
     "year": "2023",
@@ -44,8 +44,8 @@
     "num_references": 40,
     "role": "source"
   },
-  "9972f542-708f-4aa5-b333-e89798a0499f": {
-    "paper_id": "9972f542-708f-4aa5-b333-e89798a0499f",
+  "b33b8bba-2c5d-4156-9ff4-faabeeba774f": {
+    "paper_id": "b33b8bba-2c5d-4156-9ff4-faabeeba774f",
     "title": "The doubly librating Plutinos",
     "first_author": "Renu Malhotra",
     "year": "2025",
