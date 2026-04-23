@@ -27,47 +27,178 @@ class CitationOverlay {
     }
 
     setupObserver(container) {
-        // Listen for mousemove to find [brackets] under the cursor
-        container.addEventListener('mouseover', (e) => {
+        // Listen for continuous mousemove to hit sub-span accuracy
+        container.addEventListener('mousemove', (e) => {
             const target = e.target;
             
-            // Check if we are over a text span
             if (target.tagName === 'SPAN' && target.parentElement.classList.contains('textLayer')) {
-                const text = target.textContent.trim();
-                const regex = /\[\s*([\d,\s\-–]+)\s*\]/;
-                const match = text.match(regex);
+                let charOffset = 0;
                 
-                if (match) {
-                    const context = this.extractContext(target.parentElement.textContent);
-                    this.show({ target: target }, match[0], context);
+                // Fetch exact character index under cursor for 1-to-1 parsing
+                if (document.caretPositionFromPoint) {
+                    const caret = document.caretPositionFromPoint(e.clientX, e.clientY);
+                    if (caret && caret.offsetNode && caret.offsetNode.parentNode === target) {
+                        charOffset = caret.offset;
+                    }
+                } else if (document.caretRangeFromPoint) {
+                    const range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                    if (range && range.startContainer && range.startContainer.parentNode === target) {
+                        charOffset = range.startOffset;
+                    }
+                }
+
+                const parsed = this.getSentenceAndCitation(target.parentElement, target, charOffset);
+                
+                if (parsed && parsed.marker) {
+                    // Prevent flickering
+                    if (this.activeMarker === parsed.marker && this.activeContext === parsed.context && !this.tooltip.classList.contains('hidden')) {
+                        return;
+                    }
+                    this.activeMarker = parsed.marker;
+                    this.activeContext = parsed.context;
+                    // Position directly at cursor pointer to fix DOM shifting
+                    this.showAt(e.clientX, e.clientY, parsed.marker, parsed.context);
+                } else {
+                    // If we shifted to a "dead" zone in a span with no citation, hide it naturally
+                    if (!this.tooltip.matches(':hover') && this.activeMarker) {
+                         if (!this.hideTimeout) {
+                             this.hideTimeout = setTimeout(() => {
+                                 this.hide();
+                                 this.activeMarker = null;
+                                 this.activeContext = null;
+                             }, 300);
+                         }
+                    }
                 }
             }
         });
 
         container.addEventListener('mouseout', (e) => {
             if (e.target.tagName === 'SPAN') {
-                this.hideTimeout = setTimeout(() => this.hide(), 300);
+                if (!this.hideTimeout) {
+                    this.hideTimeout = setTimeout(() => {
+                        this.hide();
+                        this.activeMarker = null;
+                        this.activeContext = null;
+                    }, 300);
+                }
             }
         });
     }
 
-    extractContext(text) {
-        // Simplistic context: just grab the parent span's text. 
-        // In real PDFs, context spans multiple div lines. For MVP:
-        return text.trim();
+    getSentenceAndCitation(textLayer, targetSpan, charOffset = 0) {
+        // Cache text mapping per page to avoid massive string building on every mouse tick
+        if (!textLayer._textCache) {
+            const spans = Array.from(textLayer.querySelectorAll('span'));
+            let fullText = "";
+            let offsets = [];
+            for (let i = 0; i < spans.length; i++) {
+                offsets.push({ span: spans[i], start: fullText.length });
+                let text = spans[i].textContent;
+                fullText += text;
+                // Add natural spacing unless there's a hyphen
+                if (!text.endsWith('-') && !text.endsWith(' ')) fullText += ' ';
+            }
+            textLayer._textCache = { fullText, offsets };
+        }
+
+        const cache = textLayer._textCache;
+        const targetOffsetData = cache.offsets.find(o => o.span === targetSpan);
+        if (!targetOffsetData) return null;
+
+        // Base + the calculated offset inside the span guarantees 100% 1-to-1 character accuracy
+        const targetPos = Math.min(targetOffsetData.start + charOffset, cache.fullText.length - 1);
+        const fullText = cache.fullText;
+
+        // Traverse backward to find sentence start
+        let sentenceStart = targetPos;
+        while (sentenceStart >= 0) {
+            if (sentenceStart >= 2 && fullText.substring(sentenceStart - 2, sentenceStart) === '. ') {
+                const prev1 = fullText[sentenceStart - 3] || '';
+                const prev2 = sentenceStart >= 4 ? fullText[sentenceStart - 4] : '';
+                if (prev1 !== 'l' && prev2 !== 'a' && prev1 !== 'g') {
+                    break;
+                }
+            }
+            sentenceStart--;
+        }
+        if (sentenceStart < 0) sentenceStart = 0;
+
+        // Traverse forward to find sentence end
+        let sentenceEnd = targetPos;
+        while (sentenceEnd < fullText.length - 1) {
+            if (fullText.substring(sentenceEnd, sentenceEnd + 2) === '. ') {
+                const prev1 = fullText[sentenceEnd - 1] || '';
+                const prev2 = sentenceEnd >= 2 ? fullText[sentenceEnd - 2] : '';
+                if (prev1 !== 'l' && prev2 !== 'a' && prev1 !== 'g') {
+                    sentenceEnd += 1; // Include the period
+                    break;
+                }
+            }
+            sentenceEnd++;
+        }
+
+        let sentence = fullText.substring(sentenceStart, sentenceEnd).trim();
+        
+        // Find ALL citation markers inside this unified sentence chunk
+        const regex = /\[\s*([\d,\s\-–]+)\s*\]/g;
+        const matches = [...sentence.matchAll(regex)];
+        
+        if (matches.length > 0) {
+            // Find which sub-segment of the sentence we are hovering over
+            // targetPos maps to an offset within the extracted sentence
+            const localTargetPos = targetPos - sentenceStart;
+            
+            // By default, assume the entire sentence belongs to the first match
+            let bestMatch = matches[0];
+            let bestContext = sentence;
+            
+            // If the sentence has multiple citations, chop it into territorial boundary chunks
+            if (matches.length > 1) {
+                for (let i = 0; i < matches.length; i++) {
+                    let m = matches[i];
+                    // Territory starts right after the PREVIOUS marker, or 0 if first
+                    let territoryStart = i === 0 ? 0 : matches[i - 1].index + matches[i - 1][0].length;
+                    let markerEnd = m.index + m[0].length;
+                    
+                    // If the mouse is before or exactly on this marker, it belongs to this chunk
+                    if (localTargetPos >= territoryStart && localTargetPos <= markerEnd) {
+                        bestMatch = m;
+                        // Slice just this chunk so the backend only searches for the exact local context
+                        bestContext = sentence.substring(territoryStart, markerEnd).trim();
+                        break;
+                    }
+                }
+                
+                // If hovered past the final marker, it belongs to the final snippet
+                if (localTargetPos > matches[matches.length - 1].index + matches[matches.length - 1][0].length) {
+                    let lastIdx = matches.length - 1;
+                    bestMatch = matches[lastIdx];
+                    let territoryStart = lastIdx === 0 ? 0 : matches[lastIdx - 1].index + matches[lastIdx - 1][0].length;
+                    bestContext = sentence.substring(territoryStart).trim();
+                }
+            } 
+            
+            return {
+                context: bestContext,
+                marker: bestMatch[0]
+            };
+        }
+        
+        return null;
     }
 
-    async show(event, marker, context) {
+    async showAt(x, y, marker, context) {
         if (this.hideTimeout) clearTimeout(this.hideTimeout);
 
-        // Position immediately
-        const rect = event.target.getBoundingClientRect();
-        this.tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-        this.tooltip.style.top = (rect.bottom + 10) + 'px'; // 10px below marker
+        // Position directly at the cursor coordinates, creating a tight physical link 
+        // to exactly what the user is inspecting.
+        this.tooltip.style.left = x + 'px';
+        this.tooltip.style.top = (y + 15) + 'px'; // 15px below cursor
 
         // Handle screen edge collisions
-        if (rect.bottom + 300 > window.innerHeight) {
-            this.tooltip.style.top = (rect.top - 10) + 'px';
+        if (y + 300 > window.innerHeight) {
+            this.tooltip.style.top = (y - 15) + 'px';
             this.tooltip.style.transform = 'translate(-50%, -100%)';
         } else {
             this.tooltip.style.transform = 'translate(-50%, 0)';

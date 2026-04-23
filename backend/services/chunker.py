@@ -43,10 +43,22 @@ def chunk_text(text: str, max_tokens: int = 80) -> List[str]:
 def chunk_pages(pages: List[Any], max_tokens: int = 80) -> List[Dict[str, Any]]:
     """
     Takes a list of Page objects and chunks them, returning a list of chunk dicts including metadata.
+    Automatically truncates the document at the 'References' or 'Bibliography' section to 
+    prevent noise from entering the vector database.
     """
+    import re
     all_chunks = []
     chunk_idx = 0
+    
     for page in pages:
+        # Heuristic: Find reference sections only in the latter half of the document
+        if page.page_num > len(pages) * 0.5:
+            # Look for headers like "References", "REFERENCES", "Bibliography" bordered by newlines
+            ref_match = re.search(r'\n(?:\d{1,2}\.?\s*)?(References|REFERENCES|Bibliography|BIBLIOGRAPHY)\s*\n', page.text)
+            if ref_match:
+                # Truncate to everything before the bibliography header
+                page.text = page.text[:ref_match.start()]
+                
         text_chunks = chunk_text(page.text, max_tokens)
         for t_chunk in text_chunks:
             # We don't want empty chunks
@@ -58,5 +70,10 @@ def chunk_pages(pages: List[Any], max_tokens: int = 80) -> List[Dict[str, Any]]:
                 "text": t_chunk
             })
             chunk_idx += 1
+            
+        # If we truncated the text on this page because of a bibliography match, 
+        # stop processing all subsequent pages entirely (avoids indexing multi-page bibliographies).
+        if page.page_num > len(pages) * 0.5 and ref_match:
+            break
             
     return all_chunks
