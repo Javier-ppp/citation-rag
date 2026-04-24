@@ -90,6 +90,7 @@ To launch the frontend:
 2. Optionally add any reference/source PDFs with "Add Source."
 3. Hover over citation markers (e.g., [1], [5]) in the PDF to see instant verification tooltips.
 4. Use the right panel’s "Forward Search" to type claims and find supporting text across your local library.
+5. Or hover with your mouse over a sentence supported with a reference to see the sentences (in the referenced article) that support it. 
 
 ---
 
