@@ -47,7 +47,7 @@ For technical details, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - Python 3.9+
 - Node.js (only for development/frontend modifications)
-- Local LLM backend (supports Ollama with Gemma 4 E2B)
+- Local LLM backend (supports Ollama with Gemma 4 E2B, install scording instructions [https://docs.ollama.com/quickstart])
 - Chrome/Firefox (for web UI)
 
 ### 2. Installation
@@ -150,6 +150,7 @@ Apache License 2.0 — see [LICENSE](LICENSE) for details.
 ---
 
 ## Acknowledgements
+This project was partially vibecoded using Google's Antigravity, Claude 4.6 and Geminy 3.1 
 
 - [PDF.js](https://mozilla.github.io/pdf.js/) for document rendering.
 - [sentence-transformers](https://www.sbert.net/) for embeddings.
