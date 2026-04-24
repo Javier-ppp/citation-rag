@@ -22,7 +22,7 @@ Citation RAG is an innovative open-source tool that provides transparent citatio
 
 ## Demo
 
-> (Optional: Include screenshots or GIFs of the UI, PDF hover tooltips, evidence search in action.)
+> (To do: Include screenshots or GIFs of the UI, PDF hover tooltips, evidence search in action.)
 
 ---
 
@@ -47,7 +47,7 @@ For technical details, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - Python 3.9+
 - Node.js (only for development/frontend modifications)
-- Local LLM backend (supports Ollama with Gemma 4 E2B, install scording instructions [https://docs.ollama.com/quickstart])
+- Local LLM backend (supports Ollama with Gemma 4 E2B, install scording instructions [Ollama docs](https://docs.ollama.com/quickstart))
 - Chrome/Firefox (for web UI)
 
 ### 2. Installation
