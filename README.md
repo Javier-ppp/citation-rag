@@ -82,7 +82,7 @@ To start the backend API:
 ```
 
 To launch the frontend:
-- Open `frontend/index.html` with your browser (if backend is running, the viewer will connect automatically).
+- Open `[frontend/index.html](http://localhost:8000/)` with your browser (if backend is running, the viewer will connect automatically).
 
 ### 5. Uploading & Using Papers
 
